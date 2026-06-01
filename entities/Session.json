@@ -1,0 +1,46 @@
+{
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "The ID of the user who completed the session"
+    },
+    "session_date": {
+      "type": "string",
+      "description": "Date the session was completed"
+    },
+    "session_number": {
+      "type": "number",
+      "description": "Which session number this is for the user"
+    },
+    "pain_before": {
+      "type": "number",
+      "description": "Pain level before the session (0-10)"
+    },
+    "pain_after": {
+      "type": "number",
+      "description": "Pain level after the session (0-10)"
+    },
+    "injury_area": {
+      "type": "string",
+      "description": "Body area being treated"
+    },
+    "binaural_beat_used": {
+      "type": "string",
+      "description": "Which binaural beat track was used"
+    },
+    "completed": {
+      "type": "boolean",
+      "description": "Whether the session was fully completed"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Any notes the user added after the session"
+    }
+  },
+  "required": [
+    "user_id",
+    "session_date"
+  ],
+  "name": "Session"
+}

@@ -1,0 +1,31 @@
+{
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "The ID of the user logging pain"
+    },
+    "log_date": {
+      "type": "string",
+      "description": "Date of the pain log entry"
+    },
+    "pain_level": {
+      "type": "number",
+      "description": "Pain level on a scale of 0-10"
+    },
+    "injury_area": {
+      "type": "string",
+      "description": "Body area being tracked"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes about the pain or improvement"
+    }
+  },
+  "required": [
+    "user_id",
+    "log_date",
+    "pain_level"
+  ],
+  "name": "PainTracking"
+}
