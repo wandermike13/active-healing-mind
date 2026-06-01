@@ -19,12 +19,27 @@ Deno.serve(async (req) => {
 
     const user = users[0];
 
-    // Count their completed sessions
+    // Get all sessions
     const sessions = await base44.entities.Session.filter({ user_id });
     const completedSessions = sessions.filter((s: any) => s.completed).length;
 
-    // Show upgrade nudge every 3 sessions for free users
+    // Upgrade nudge: every 3 sessions for free users, but not at session 0
     const showUpgradeNudge = !user.is_premium && completedSessions > 0 && completedSessions % 3 === 0;
+
+    // Next session number
+    const nextSessionNumber = completedSessions + 1;
+
+    // Days since first session
+    const sortedSessions = sessions
+      .filter((s: any) => s.session_date)
+      .sort((a: any, b: any) => new Date(a.session_date).getTime() - new Date(b.session_date).getTime());
+
+    let daysSinceStart = 0;
+    if (sortedSessions.length > 0) {
+      const first = new Date(sortedSessions[0].session_date);
+      const now = new Date();
+      daysSinceStart = Math.floor((now.getTime() - first.getTime()) / (1000 * 60 * 60 * 24));
+    }
 
     return Response.json({
       success: true,
@@ -34,6 +49,8 @@ Deno.serve(async (req) => {
         full_name: user.full_name,
         is_premium: user.is_premium || false,
         completed_sessions: completedSessions,
+        next_session_number: nextSessionNumber,
+        days_since_start: daysSinceStart,
         show_upgrade_nudge: showUpgradeNudge
       }
     });

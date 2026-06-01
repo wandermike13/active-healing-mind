@@ -4,7 +4,7 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    const { 
+    const {
       user_id,
       session_number,
       pain_before,
@@ -15,16 +15,28 @@ Deno.serve(async (req) => {
     } = await req.json();
 
     if (!user_id || pain_before === undefined || pain_after === undefined) {
-      return Response.json({ error: "Missing required fields" }, { status: 400 });
+      return Response.json({ error: "Missing required fields: user_id, pain_before, pain_after" }, { status: 400 });
+    }
+
+    // Validate pain range 0–10
+    if (pain_before < 0 || pain_before > 10 || pain_after < 0 || pain_after > 10) {
+      return Response.json({ error: "Pain levels must be between 0 and 10" }, { status: 400 });
     }
 
     const session_date = new Date().toISOString().split("T")[0];
+
+    // Count existing sessions for this user to auto-number if not supplied
+    let resolvedSessionNumber = session_number;
+    if (!resolvedSessionNumber) {
+      const existing = await base44.entities.Session.filter({ user_id });
+      resolvedSessionNumber = existing.length + 1;
+    }
 
     // Save session record
     const session = await base44.entities.Session.create({
       user_id,
       session_date,
-      session_number: session_number || 1,
+      session_number: resolvedSessionNumber,
       pain_before,
       pain_after,
       injury_area: injury_area || "General",
@@ -33,19 +45,33 @@ Deno.serve(async (req) => {
       notes: notes || ""
     });
 
-    // Log a pain tracking entry for the post-session pain level
+    // Log post-session pain tracking entry
     await base44.entities.PainTracking.create({
       user_id,
       log_date: session_date,
       pain_level: pain_after,
       injury_area: injury_area || "General",
-      notes: `Post-session log (Session #${session_number})`
+      notes: `Post-session log (Session #${resolvedSessionNumber})`
     });
 
-    return Response.json({ 
-      success: true, 
+    const improvement = pain_before - pain_after;
+    const improvementPct = pain_before > 0
+      ? Math.round((improvement / pain_before) * 100)
+      : 0;
+
+    // Milestone messages
+    let milestone = null;
+    if (resolvedSessionNumber === 1) milestone = "First session complete — great start!";
+    else if (resolvedSessionNumber === 7) milestone = "One week of healing — keep going!";
+    else if (resolvedSessionNumber === 30) milestone = "30 sessions — incredible commitment!";
+
+    return Response.json({
+      success: true,
       session_id: session.id,
-      pain_improvement: pain_before - pain_after
+      session_number: resolvedSessionNumber,
+      pain_improvement: improvement,
+      improvement_pct: improvementPct,
+      milestone
     });
 
   } catch (e) {
