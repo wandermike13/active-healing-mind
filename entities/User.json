@@ -1,20 +1,19 @@
 {
   "type": "object",
   "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "user",
+        "admin"
+      ]
+    },
     "is_premium": {
       "type": "boolean"
     },
     "push_token": {
-      "type": "string"
-    },
-    "push_enabled": {
-      "type": "boolean"
-    },
-    "last_session_date": {
-      "type": "string"
-    },
-    "fcm_token": {
-      "type": "string"
+      "type": "string",
+      "description": "Expo push notification token registered on device"
     }
   },
   "required": []

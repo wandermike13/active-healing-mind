@@ -10,14 +10,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: "user_id is required" }, { status: 400 });
     }
 
-    // Get user record
-    const users = await base44.entities.User.filter({ id: user_id });
-
-    if (!users || users.length === 0) {
+    // Get user record directly by ID
+    let user;
+    try {
+      user = await base44.entities.User.get(user_id);
+    } catch (e) {
       return Response.json({ error: "User not found" }, { status: 404 });
     }
 
-    const user = users[0];
+    if (!user) {
+      return Response.json({ error: "User not found" }, { status: 404 });
+    }
 
     // Get all sessions
     const sessions = await base44.entities.Session.filter({ user_id });
